@@ -1,2 +1,2 @@
-# FreeStun
+# FreeSTUN
 Free client STUN protocol
