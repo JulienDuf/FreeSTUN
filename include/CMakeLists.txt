@@ -1,1 +1,1 @@
-add_subdirectory(freestun)
+add_subdirectory(FreeSTUN)
