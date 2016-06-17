@@ -16,32 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Common includes */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include <FreeSTUN/FreeStun.h>
 
-#ifndef _WIN32_WCE
-#include <errno.h>
-#endif
+int FreeStun_GetLastError() {
 
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netinet/tcp.h>
-#include <sys/socket.h>
-#include <net/if.h>
-#include <netdb.h>
+        return errno;
+}
 
-#define SOCKET int
-#define INVALID_SOCKET -1
-#define SOCKET_ERROR -1
+void FreeStun_SetLastError(int err)  {
 
-int FreeStun_GetLastError();
-void FreeStun_SetLastError(int err);
-
+        errno = err;
+}

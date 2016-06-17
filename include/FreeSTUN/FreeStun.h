@@ -22,6 +22,8 @@
 #include <FreeSTUN/FreeStunConfig.h>
 #include <FreeSTUN/FreeStunBuffer.h>
 
+typedef unsigned char BYTE;
+
 #define STUN_TYPE(method, class)\
 ((method) & 0x0f80) << 2 |        \
 ((method) & 0x0070) << 1 |        \
@@ -37,7 +39,8 @@
 ((type & 0x3E00) >> 2 | (type & 0x00E0) >> 1 | (type & 0x000f))
 
 enum {
-    STUN_MAGIC_COOKIE = 0x2112A442
+    STUN_MAGIC_COOKIE = 0x2112A442,
+    STUN_MAGIC_COOKIE_2 = 0x2115A442
 };
 
 /** STUN Protocol values */
@@ -215,5 +218,7 @@ extern void FreeStunAttribute_Free(StunAttribute* attribute);
 extern int FreeStunAttribute_Decode(StunAttribute* attribute, FreeStunBuffer* buffer);
 
 extern int FreeStunAttribute_Encode(StunAttribute* attribute, uint16_t type);
+
+
 
 #endif

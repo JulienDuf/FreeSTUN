@@ -20,14 +20,14 @@
 
 struct free_stun_buffer {
 
-    char* buffer;
-    char* pointer;
+    unsigned char* buffer;
+    unsigned char* pointer;
 
     size_t capacity;
     size_t len;
 };
 
-FreeStunBuffer* FreeStunBuffer_New(char* buf, size_t size) {
+FreeStunBuffer* FreeStunBuffer_New(unsigned char* buf, size_t size) {
 
     FreeStunBuffer* buffer = (FreeStunBuffer*) malloc(sizeof(FreeStunBuffer));
 
@@ -35,7 +35,7 @@ FreeStunBuffer* FreeStunBuffer_New(char* buf, size_t size) {
         return NULL;
 
     if (!buf)
-        buffer->buffer = (char*) malloc(size);
+        buffer->buffer = (unsigned char*) malloc(size);
 
     else
         buffer->buffer = buf;

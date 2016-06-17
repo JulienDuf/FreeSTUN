@@ -24,14 +24,35 @@
 
 typedef struct free_stun_socket FreeStunSocket;
 
-typedef struct free_stun_IPAdress {
+typedef struct free_stun_socket_set FreeStunSocketSet;
+
+typedef struct free_stun_IPAddress {
 
     uint32_t host;
     uint16_t port;
 
-} FreeStunIPAdress;
+} FreeStunIPAddress;
 
-FreeStunSocket* FreeStunSocket_New();
-void FreeStunSocket_Free(FreeStunSocket* socket);
+FreeStunSocket* FreeStunSocket_Open(FreeStunIPAddress* IP);
+void FreeStunSocket_Close(FreeStunSocket* socket);
+
+FreeStunSocket* FreeStunSocket_Accept(FreeStunSocket* server);
+
+FreeStunIPAddress *FreeStunSocket_GetPeerAddress(FreeStunSocket* socket);
+FreeStunIPAddress *FreeStunSocket_GetLocalAddress(FreeStunSocket* socket);
+
+int FreeStunSocket_Send(FreeStunSocket* socket, const void *datap, int len);
+int FreeStunSocket_Recv(FreeStunSocket* socket, void *data, int maxLen);
+
+int FreeStun_ResolveHost(FreeStunIPAddress *address, const char *host, uint16_t port);
+
+FreeStunSocketSet* FreeStunSocket_AllocSocketSet(int maxSockets);
+
+int FreeStunSocket_AddSocket(FreeStunSocketSet* set, FreeStunSocket* socket);
+int FreeStunSocket_DelSocket(FreeStunSocketSet* set, FreeStunSocket* socket);
+int FreeStunSocket_CheckSockets(FreeStunSocketSet* set, uint32_t timeout);
+int FreeStunSocket_SocketReady(FreeStunSocket *socket);
+
+void FreeStunSocket_FreeSocketSet(FreeStunSocketSet* set);
 
 #endif //PROJECT_FREESTUNSOCKET_H

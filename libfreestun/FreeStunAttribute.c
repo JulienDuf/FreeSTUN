@@ -108,7 +108,7 @@ int XorMappedAddress_Decode(XorMappedAddress* mappedAddress, FreeStunBuffer* buf
 
     if (type == 0x1) {
         FreeStunBuffer_ReadUint16(buffer, &mappedAddress->port);
-        mappedAddress->port ^= ((STUN_MAGIC_COOKIE & 0xFF00) >> 16);
+        mappedAddress->port ^= ((STUN_MAGIC_COOKIE & 0xFFFF0000) >> 16);
 
         FreeStunBuffer_ReadUint32(buffer, &mappedAddress->address);
         mappedAddress->address ^= STUN_MAGIC_COOKIE;

@@ -1,43 +1,76 @@
 #include <FreeSTUN/FreeStun.h>
 #include <FreeSTUN/FreeStunRequest.h>
-#include <SDL2/SDL_net.h>
-#include <SDL_net.h>
+#include <FreeSTUN/FreeStunSocket.h>
+#include <SDL2/SDL_thread.h>
+#include <signal.h>
 
+/*int thread_function(void* data) {
+
+    IPaddress IP;
+    SDLNet_ResolveHost(&IP, NULL, 53401);
+    TCPsocket server = SDLNet_TCP_Open(&IP);
+
+    SDLNet_SocketSet set = SDLNet_AllocSocketSet(2);
+    SDLNet_TCP_AddSocket(set, server);
+
+    while (1) {
+
+        int numActiveSockets = SDLNet_CheckSockets(set, 1);
+        int serverSocketActivity = SDLNet_SocketReady(server);
+
+        if (serverSocketActivity != 0) {
+            continue;
+        }
+    }
+
+    return 0;
+}*/
+
+int init(void) {
+
+    void (*handler)(int);
+    handler = signal(SIGPIPE, SIG_IGN);
+
+    if (handler != SIG_DFL)
+        signal(SIGPIPE, handler);
+
+    return 0;
+}
 
 int main(int argc, char** argv) {
 
     srand(time(NULL));
-    SDLNet_Init();
+    init();
 
     char host[100];
 
     int status;
 
-    IPaddress iPAddress;
-    status = SDLNet_ResolveHost(&iPAddress, "104.236.69.2", STUN_PORT);
+    FreeStunIPAddress iPAddress;
+    status = FreeStun_ResolveHost(&iPAddress, "104.236.69.2", STUN_PORT);
 
-    TCPsocket socket = SDLNet_TCP_Open(&iPAddress);
-    SDLNet_SocketSet set = SDLNet_AllocSocketSet(2);
-    SDLNet_TCP_AddSocket(set, socket);
+    FreeStunSocket *socket = FreeStunSocket_Open(&iPAddress);
+    FreeStunSocketSet *set = FreeStunSocket_AllocSocketSet(2);
+    FreeStunSocket_AddSocket(set, socket);
 
     FreeStunRequest* request = FreeStunRequest_New();
     FreeStunRequest_Encode(request, STUN_METHOD_BINDING, STUN_CLASS_REQUEST);
 
-    status = SDLNet_TCP_Send(socket, FreeStunRequest_GetData(request), FreeStunRequest_GetLength(request));
+    status = FreeStunSocket_Send(socket, FreeStunRequest_GetData(request), FreeStunRequest_GetLength(request));
 
     int gotMessage;
     char* buffer = (char*)malloc(STUN_MAX_SIZE);
     while (1) {
 
-        status = SDLNet_CheckSockets(set, 10);
+        status = FreeStunSocket_CheckSockets(set, 10);
 
         if (status != 0) {
 
-            gotMessage = SDLNet_SocketReady(socket);
+            gotMessage = FreeStunSocket_SocketReady(socket);
 
             if (gotMessage != 0) {
 
-                int serverResponseByteCount = SDLNet_TCP_Recv(socket, buffer, STUN_MAX_SIZE - 1);
+                int serverResponseByteCount = FreeStunSocket_Recv(socket, buffer, STUN_MAX_SIZE - 1);
 
                 if (serverResponseByteCount != 0) {
 
@@ -48,25 +81,20 @@ int main(int argc, char** argv) {
         }
     }
 
-    uint32_t address = request->attributes[0]->attribute.mappedAddress.address;
+    //SDL_Thread *thread = SDL_CreateThread(thread_function, "Thread", NULL);
 
-    uint32_t swapped = ((address >> 24) & 0xff) | ((address << 8) & 0xff0000) | ((address >> 8) & 0xff00) | ((address << 24) & 0xff000000);
+    FreeStunIPAddress IP;
+    FreeStun_ResolveHost(&IP, "173.177.172.66", 53401);
+    FreeStunSocket *server = FreeStunSocket_Open(&IP);
 
-    void* ptr = (void*)&swapped;
+    FreeStunSocketSet* set2 = FreeStunSocket_AllocSocketSet(2);
+    FreeStunSocket_AddSocket(set2, server);
 
-    inet_ntop(AF_INET, ptr, host, 100);
-    printf("%s\n", host);
+    while (!server) {
 
-    address = request->attributes[2]->attribute.mappedAddress.address;
+        server = FreeStunSocket_Open(&IP);
+    }
 
-   swapped = ((address >> 24) & 0xff) | ((address << 8) & 0xff0000) | ((address >> 8) & 0xff00) | ((address << 24) & 0xff000000);
-
-    ptr = (void*)&swapped;
-
-    inet_ntop(AF_INET, ptr, host, 100);
-    printf("%s\n", host);
-
-    SDLNet_Quit();
     return 0;
 }
 

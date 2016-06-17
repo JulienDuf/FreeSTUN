@@ -4,6 +4,7 @@ set(MODULE_PREFIX "LIBFREESTUN")
 set(${MODULE_PREFIX}_HEADERS "")
 
 set(${MODULE_PREFIX}_SOURCES
+        FreeStun.c
         FreeStunSocket.c
         FreeStunBuffer.c
         FreeStunRequest.c

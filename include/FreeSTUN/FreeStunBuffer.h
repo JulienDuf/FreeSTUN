@@ -23,7 +23,7 @@
 
 typedef struct free_stun_buffer FreeStunBuffer;
 
-FreeStunBuffer* FreeStunBuffer_New(char* buffer, size_t size);
+FreeStunBuffer* FreeStunBuffer_New(unsigned char* buffer, size_t size);
 void FreeStunBuffer_Free(FreeStunBuffer* buffer);
 
 void FreeStunBuffer_Clear(FreeStunBuffer* buffer);

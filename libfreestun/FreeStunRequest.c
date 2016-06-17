@@ -18,8 +18,8 @@
 
 #include <FreeSTUN/FreeStunRequest.h>
 
-int FreeStunRequest_GenTransactionID(StunHeader *header)
-{
+int FreeStunRequest_GenTransactionID(StunHeader *header) {
+
     int i = 0;
     for (; i < STUN_TID_SIZE; ++i)
     {
