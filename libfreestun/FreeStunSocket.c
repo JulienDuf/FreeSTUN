@@ -55,10 +55,11 @@ int FreeStun_ResolveHost(FreeStunIPAddress *address, const char *host, uint16_t 
         return status;
 }
 
-FreeStunSocket* FreeStunSocket_Open(FreeStunIPAddress* IP) {
+FreeStunSocket* FreeStunSocket_OpenWithLocalPort(FreeStunIPAddress* IP, uint16_t port) {
 
         FreeStunSocket *sock;
         struct sockaddr_in sock_addr;
+        struct sockaddr_in local;
 
         sock = (FreeStunSocket*) malloc(sizeof(sock));
         if (!sock)
@@ -69,6 +70,22 @@ FreeStunSocket* FreeStunSocket_Open(FreeStunIPAddress* IP) {
                 goto error_return;
 
         if ((IP->host != INADDR_NONE) && (IP->host != INADDR_ANY)) {
+
+                int yes = 1;
+                setsockopt(sock->socket, SOL_SOCKET, SO_REUSEADDR, (char*)&yes, sizeof(yes));
+
+                if (port) {
+
+                        memset(&local, 0, sizeof(local));
+                        local.sin_family = AF_INET;
+                        local.sin_addr.s_addr = INADDR_ANY;
+                        local.sin_port = port;
+
+                        if (bind(sock->socket, (struct sockaddr *)&local, sizeof(local)) == SOCKET_ERROR) {
+                                int u = errno;
+                                goto error_return;
+                        }
+                }
 
                 memset(&sock_addr, 0, sizeof(sock_addr));
                 sock_addr.sin_family = AF_INET;
@@ -113,7 +130,7 @@ FreeStunSocket* FreeStunSocket_Open(FreeStunIPAddress* IP) {
 
         struct sockaddr_in sin;
         int addrlen = sizeof(sin);
-        if (getsockname(sock->socket, (struct sockaddr*)&sin, &addrlen) != 0) {
+        if (!getsockname(sock->socket, (struct sockaddr*)&sin, &addrlen)) {
 
                 sock->localAddress.host = sin.sin_addr.s_addr;
                 sock->localAddress.port = sin.sin_port;
@@ -125,6 +142,11 @@ FreeStunSocket* FreeStunSocket_Open(FreeStunIPAddress* IP) {
 
         FreeStunSocket_Close(sock);
         return NULL;
+}
+
+FreeStunSocket* FreeStunSocket_Open(FreeStunIPAddress* IP) {
+
+        return FreeStunSocket_OpenWithLocalPort(IP, NULL);
 }
 
 void FreeStunSocket_Close(FreeStunSocket* socket) {
@@ -254,7 +276,7 @@ FreeStunSocketSet* FreeStunSocket_AllocSocketSet(int maxSockets) {
 
                 set->numsockets = 0;
                 set->maxsockets = maxSockets;
-                set->sockets = (FreeStunSocket**) malloc(maxSockets * sizeof(FreeStunSocket));
+                set->sockets = (FreeStunSocket**) calloc(maxSockets, 8);
 
                 if (set->sockets) {
                         for (i = 0; i < maxSockets; ++i)

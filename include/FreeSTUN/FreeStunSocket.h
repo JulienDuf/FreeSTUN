@@ -33,6 +33,7 @@ typedef struct free_stun_IPAddress {
 
 } FreeStunIPAddress;
 
+FreeStunSocket* FreeStunSocket_OpenWithLocalPort(FreeStunIPAddress* IP, uint16_t port);
 FreeStunSocket* FreeStunSocket_Open(FreeStunIPAddress* IP);
 void FreeStunSocket_Close(FreeStunSocket* socket);
 
