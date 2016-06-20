@@ -124,7 +124,7 @@ void FreeStunBuffer_Skip(FreeStunBuffer* buffer, size_t size) {
     buffer->pointer += size;
 }
 
-char* FreeStunBuffer_GetBuffer(FreeStunBuffer* buffer) {
+unsigned char* FreeStunBuffer_GetBuffer(FreeStunBuffer* buffer) {
 
     return buffer->buffer;
 }

@@ -37,6 +37,82 @@ int init(void) {
     return 0;
 }
 
+uint16_t sendAndGetInfo(uint32_t ip, uint16_t port) {
+
+    FreeStunIPAddress iPAddress;
+    int status = FreeStun_ResolveHost(&iPAddress, "159.203.63.242", 21225);
+
+    FreeStunSocket *socket = FreeStunSocket_Open(&iPAddress);
+    FreeStunSocketSet *set = FreeStunSocket_AllocSocketSet(2);
+    FreeStunSocket_AddSocket(set, socket);
+
+    status = FreeStunSocket_CheckSockets(set, 10);
+    int gotMessage;
+    char* buffer = (char*)malloc(STUN_MAX_SIZE);
+
+    if (status != 0) {
+
+        gotMessage = FreeStunSocket_SocketReady(socket);
+
+        if (gotMessage != 0) {
+
+            int serverResponseByteCount = FreeStunSocket_Recv(socket, buffer, STUN_MAX_SIZE - 1);
+        }
+    }
+
+    FreeStunBuffer *buf = FreeStunBuffer_New(NULL, 1024);
+    FreeStunBuffer_WriteUint32(buf, ip);
+    FreeStunBuffer_WriteUint16(buf, port);
+    FreeStunBuffer_SealLength(buf);
+    FreeStunSocket_Send(socket, FreeStunBuffer_GetBuffer(buf), FreeStunBuffer_GetLength(buf));
+
+    while (1) {
+
+        status = FreeStunSocket_CheckSockets(set, 10);
+
+        if (status != 0) {
+
+            gotMessage = FreeStunSocket_SocketReady(socket);
+
+            if (gotMessage != 0) {
+
+                int serverResponseByteCount = FreeStunSocket_Recv(socket, buffer, 1024 - 1);
+
+                if (serverResponseByteCount != 0)
+                    break;
+            }
+        }
+    }
+
+    while (1) {
+
+        status = FreeStunSocket_CheckSockets(set, 10);
+
+        if (status != 0) {
+
+            gotMessage = FreeStunSocket_SocketReady(socket);
+
+            if (gotMessage != 0) {
+
+                int serverResponseByteCount = FreeStunSocket_Recv(socket, buffer, 1024 - 1);
+
+                if (serverResponseByteCount != 0)
+                    break;
+            }
+        }
+    }
+
+    // TODO: Deal wih the new IP
+
+    uint16_t ret = FreeStunSocket_GetLocalAddress(socket)->port;
+    FreeStunBuffer_Free(buf);
+    FreeStunSocket_DelSocket(set, socket);
+    FreeStunSocket_FreeSocketSet(set);
+    FreeStunSocket_Close(socket);
+
+    return ret;
+}
+
 int main(int argc, char** argv) {
 
     srand(time(NULL));
@@ -53,13 +129,26 @@ int main(int argc, char** argv) {
     FreeStunSocketSet *set = FreeStunSocket_AllocSocketSet(2);
     FreeStunSocket_AddSocket(set, socket);
 
+    status = FreeStunSocket_CheckSockets(set, 10);
+    int gotMessage;
+    char* buffer = (char*)malloc(STUN_MAX_SIZE);
+
+    if (status != 0) {
+
+        gotMessage = FreeStunSocket_SocketReady(socket);
+
+        if (gotMessage != 0) {
+
+            int serverResponseByteCount = FreeStunSocket_Recv(socket, buffer, STUN_MAX_SIZE - 1);
+
+        }
+    }
+
     FreeStunRequest* request = FreeStunRequest_New();
     FreeStunRequest_Encode(request, STUN_METHOD_BINDING, STUN_CLASS_REQUEST);
 
     status = FreeStunSocket_Send(socket, FreeStunRequest_GetData(request), FreeStunRequest_GetLength(request));
 
-    int gotMessage;
-    char* buffer = (char*)malloc(STUN_MAX_SIZE);
     while (1) {
 
         status = FreeStunSocket_CheckSockets(set, 10);
@@ -80,6 +169,8 @@ int main(int argc, char** argv) {
             }
         }
     }
+
+    uint16_t port = sendAndGetInfo(request->attributes[2]->attribute.xorMappedAddress.address, request->attributes[2]->attribute.xorMappedAddress.port);
 
     //SDL_Thread *thread = SDL_CreateThread(thread_function, "Thread", NULL);
 

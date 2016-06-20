@@ -41,7 +41,7 @@ void FreeStunBuffer_ReadUint32(FreeStunBuffer* buffer, uint32_t* data);
 void FreeStunBuffer_Read(FreeStunBuffer* buffer, char* dest, size_t size);
 void FreeStunBuffer_Skip(FreeStunBuffer* buffer, size_t size);
 
-char* FreeStunBuffer_GetBuffer(FreeStunBuffer* buffer);
+unsigned char* FreeStunBuffer_GetBuffer(FreeStunBuffer* buffer);
 size_t FreeStunBuffer_GetLength(FreeStunBuffer* buffer);
 
 #endif //PROJECT_FREESTUNBUFFER_H
