@@ -74,6 +74,9 @@ FreeStunSocket* FreeStunSocket_OpenWithLocalPort(FreeStunIPAddress* IP, uint16_t
                 int yes = 1;
                 setsockopt(sock->socket, SOL_SOCKET, SO_REUSEADDR, (char*)&yes, sizeof(yes));
 
+                yes = 1;
+                setsockopt(sock->socket, SOL_SOCKET, SO_REUSEPORT, (char*)&yes, sizeof(yes));
+
                 if (port) {
 
                         memset(&local, 0, sizeof(local));
@@ -81,10 +84,8 @@ FreeStunSocket* FreeStunSocket_OpenWithLocalPort(FreeStunIPAddress* IP, uint16_t
                         local.sin_addr.s_addr = INADDR_ANY;
                         local.sin_port = port;
 
-                        if (bind(sock->socket, (struct sockaddr *)&local, sizeof(local)) == SOCKET_ERROR) {
-                                int u = errno;
+                        if (bind(sock->socket, (struct sockaddr *)&local, sizeof(local)) == SOCKET_ERROR)
                                 goto error_return;
-                        }
                 }
 
                 memset(&sock_addr, 0, sizeof(sock_addr));
@@ -137,8 +138,10 @@ FreeStunSocket* FreeStunSocket_OpenWithLocalPort(FreeStunIPAddress* IP, uint16_t
         }
 
         return sock;
-
+        int u;
         error_return:
+
+        u = errno;
 
         FreeStunSocket_Close(sock);
         return NULL;
